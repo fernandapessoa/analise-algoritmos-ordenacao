@@ -1,7 +1,29 @@
-import os
+import random
 import time
 import pandas as pd
 import matplotlib.pyplot as plt
+import argparse
+import os
+from colorama import Fore, Style
+import colorama
+
+# Funções para gerar vetores conforme especificado
+def generate_random_vector(n):
+    return [random.randint(0, n**2) for _ in range(n)]
+
+def generate_reverse_vector(n):
+    return list(range(n, 0, -1))
+
+def generate_sorted_vector(n):
+    return list(range(1, n + 1))
+
+def generate_nearly_sorted_vector(n):
+    vector = list(range(1, n + 1))
+    num_swaps = max(1, n // 10)
+    for _ in range(num_swaps):
+        i, j = random.sample(range(n), 2)
+        vector[i], vector[j] = vector[j], vector[i]
+    return vector
 
 # Algoritmos de ordenação
 def bubble_sort(arr):
@@ -120,11 +142,8 @@ def measure_time_and_sort(sort_func, arr):
     exec_time = time.time() - start_time
     return sorted_arr, exec_time
 
-# Função para gerar gráficos e tabelas separadas para RANDOM, REVERSE e SORTED
-def generate_data_and_plot(input_dir, output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
+# Função para gerar e plotar os resultados
+def generate_data_and_plot(inc, fim, stp, rpt, output_dir):
     algorithms = {
         "Bubble": bubble_sort,
         "Insertion": insertion_sort,
@@ -135,70 +154,77 @@ def generate_data_and_plot(input_dir, output_dir):
     }
 
     categories = {
-        "RANDOM": [],
-        "REVERSE": [],
-        "SORTED": []
+        "RANDOM": generate_random_vector,
+        "REVERSE": generate_reverse_vector,
+        "SORTED": generate_sorted_vector,
+        "NEARLY_SORTED": generate_nearly_sorted_vector
     }
 
-    for filename in os.listdir(input_dir):
-        if filename.endswith(".txt"):
-            filepath = os.path.join(input_dir, filename)
-            print(f"Processing {filepath}")
+    # Criação do diretório de saída se não existir
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-            # Identifica a categoria do arquivo
-            if "RANDOM" in filename.upper():
-                category = "RANDOM"
-            elif "REVERSE" in filename.upper():
-                category = "REVERSE"
-            elif "SORTED" in filename.upper() or "ORDENADO" in filename.upper():
-                category = "SORTED"
-            else:
-                print(f"Warning: Filename {filename} does not match any known category. Skipping.")
-                continue
-            
-            with open(filepath, 'r') as f:
-                arr = [int(line.strip()) for line in f]
-                n = len(arr)
+    for category_name, generate_vector in categories.items():
+        print(f"\n\nIniciando categoria: {category_name} -------------------------  ")
+        results = []
 
-                results = {'n': n}
+        for n in range(inc, fim + 1, stp):
+            print(f"\n  Processando vetor de tamanho {n}...")
+            avg_times = {'n': n}
 
-                for name, sort_func in algorithms.items():
-                    sorted_arr, exec_time = measure_time_and_sort(sort_func, arr)
-                    results[name] = exec_time
+            for name, sort_func in algorithms.items():
+                print(f"\n    Executando {name} sort...")
+                total_time = 0
+                for i in range(rpt):
+                    vector = generate_vector(n)
+                    _, exec_time = measure_time_and_sort(sort_func, vector)
+                    total_time += exec_time
+                    print(f"      Repetição {i+1}/{rpt} - Tempo: {exec_time:.6f} s")
 
-                    # Salva o vetor ordenado em um arquivo
-                    output_filename = f"{filename.split('.')[0]}_{name}_sorted.txt"
-                    output_filepath = os.path.join(output_dir, output_filename)
-                    with open(output_filepath, 'w') as out_f:
-                        for num in sorted_arr:
-                            out_f.write(f"{num}\n")
+                avg_times[name] = total_time / rpt
+                print(f"    Média de tempo para {name} sort: {avg_times[name]:.6f} s")
 
-                    print(f"Algoritmo: {name}, Categoria: {category}, Tamanho do vetor: {n}, Tempo de execução: {exec_time:.6f} segundos")
+            results.append(avg_times)
 
-                categories[category].append(results)
+        df = pd.DataFrame(results)
 
-    for category, results in categories.items():
-        if results:
-            df = pd.DataFrame(results)
+        # Gerando gráfico
+        plt.figure(figsize=(10, 6))
+        for column in df.columns[1:]:
+            plt.plot(df['n'], df[column], label=column)
 
-            # Gerando gráfico
-            plt.figure(figsize=(10, 6))
-            for column in df.columns[1:]:
-                plt.plot(df['n'], df[column], label=column)
-            
-            plt.xlabel('Tamanho do Vetor (n)')
-            plt.ylabel('Tempo de Execução (s)')
-            plt.title(f'Comparação dos Algoritmos de Ordenação - {category}')
-            plt.legend()
-            plt.grid(True)
-            plt.savefig(os.path.join(output_dir, f'comparison_chart_{category}.png'))
-            plt.show()
+        plt.xlabel('Tamanho do Vetor (n)')
+        plt.ylabel('Tempo de Execução (s)')
+        plt.title(f'Comparação dos Algoritmos de Ordenação - {category_name}')
+        plt.legend()
+        plt.grid(True)
 
-            # Salvando a tabela em formato CSV
-            df.to_csv(os.path.join(output_dir, f'comparison_table_{category}.csv'), index=False)
+        # Salvando o gráfico como PNG na pasta de saída
+        graph_filename = os.path.join(output_dir, f'comparison_chart_{category_name}.png')
+        plt.savefig(graph_filename)
+        print(f"Gráfico salvo como '{graph_filename}'")
 
-# Exemplo de uso
-input_dir = "test_cases"  # Diretório onde os arquivos de entrada estão localizados
-output_dir = "resultados"  # Diretório onde os gráficos e tabelas serão salvos
+        plt.show()
 
-generate_data_and_plot(input_dir, output_dir)
+        # Salvando a tabela em formato CSV na pasta de saída
+        csv_filename = os.path.join(output_dir, f'comparison_table_{category_name}.csv')
+        df.to_csv(csv_filename, index=False)
+        print(f"Tabela de comparação salva como '{csv_filename}'")
+
+# Função principal para processar argumentos da linha de comando
+def main():
+    parser = argparse.ArgumentParser(description='Análise de algoritmos de ordenação.')
+    parser.add_argument('inc', type=int, help='Tamanho inicial do vetor.')
+    parser.add_argument('fim', type=int, help='Tamanho final do vetor.')
+    parser.add_argument('stp', type=int, help='Intervalo entre os tamanhos dos vetores.')
+    parser.add_argument('rpt', type=int, help='Número de repetições para cada tamanho de vetor.')
+    
+
+    args = parser.parse_args()
+
+    output_dir = "results"
+
+    generate_data_and_plot(args.inc, args.fim, args.stp, args.rpt, output_dir)
+
+if __name__ == "__main__":
+    main()
