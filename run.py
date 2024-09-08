@@ -144,13 +144,15 @@ def heap_sort(A):
 # Quick Sort ------------------------------------------------
 
 def partition(A, p, r):
-    x = A[r]  # Pivô
+    pivot_index = random.randint(p, r)  # Escolhe um pivô aleatório
+    A[pivot_index], A[r] = A[r], A[pivot_index]  # Troca o pivô com o último elemento
+    x = A[r]  # Define o pivô como o último elemento (que agora contém o pivô aleatório)
     i = p - 1
     for j in range(p, r):
         if A[j] <= x:
             i += 1
-            A[i], A[j] = A[j], A[i]  # Troca A[i] com A[j]
-    A[i + 1], A[r] = A[r], A[i + 1]  # Troca A[i+1] com o pivô (A[r])
+            A[i], A[j] = A[j], A[i]
+    A[i + 1], A[r] = A[r], A[i + 1]
     return i + 1
 
 def quick_sort(A, p=0, r=None):
@@ -158,9 +160,9 @@ def quick_sort(A, p=0, r=None):
         r = len(A) - 1  # Define r como o último índice do vetor
     if p < r:
         q = partition(A, p, r)  # Particiona e encontra a posição do pivô
-        quick_sort(A, p, q - 1)  # Ordena a parte esquerda
-        quick_sort(A, q + 1, r)  # Ordena a parte direita
-
+        quick_sort(A, p, q - 1)  # Ordena a parte à esquerda do pivô
+        quick_sort(A, q + 1, r)  # Ordena a parte à direita do pivô
+        
 # Counting Sort ------------------------------------------------
 def counting_sort(A):
     # Determina o valor máximo do array A
