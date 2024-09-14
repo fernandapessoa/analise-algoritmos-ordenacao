@@ -7,26 +7,27 @@ import os
 from colorama import Fore, Style
 import colorama
 
-
-
 # Gerar vetores ------------------------------------------------------------------------------------------------------------
 
 #Sorted List
 #obs: executar apenas 1x
 def gerar_vetor_ordenado(n): 
-    return list(range(1,n+1)) #de 1 a n
+    #de 1 a n
+    return list(range(1,n+1)) 
 
 #obs: deve ser executado apenas 1 vez
 def gerar_vetor_reverso(n): 
-    return list(range(n, 0, -1)) #varia de n até 1
+    #varia de n até 1
+    return list(range(n, 0, -1)) 
 
 def gerar_vetor_aleatorio(n):
-    return [random.randint(0, n**2) for _ in range(n)] #n numeros variando de 0 até n**2, que nem o pdf pediu
+    #n numeros variando de 0 até n**2, que nem o pdf pediu
+    return [random.randint(0, n) for _ in range(n)] 
 
 
 def gerar_vetor_quase_ordenado(n):
     # Gerar n números inteiros pseudoaleatórios no intervalo [0, n²]
-    vetor = sorted(random.randint(0, n**2) for _ in range(n))
+    vetor = sorted(random.randint(0, n) for _ in range(n))
     
     # Definir 10% dos elementos para serem embaralhados
     num_trocas = int(0.1 * n) 
@@ -41,6 +42,7 @@ def gerar_vetor_quase_ordenado(n):
 
 #Algoritmos --------------------------------------------------------------------------------------------------------------
 
+# Bubble Sort ----------------------------------
 def bubble_sort(numbers):
     size = len(numbers)
     for i in range(size -1): 
@@ -48,7 +50,7 @@ def bubble_sort(numbers):
             if numbers[j] > numbers[j + 1]:
                 numbers[j], numbers[j + 1] = numbers[j + 1], numbers[j]
 
-
+# Insertion Sort ----------------------------------
 def insertion_sort(vetor):
     for j in range(1, len(vetor)):
         key = vetor[j]
@@ -97,12 +99,6 @@ def merge_sort(A):
         merge(A, L, R)
 
 
-
-
-
-
-
-
 # Heap Sort --------------------------------------------
 def parent(i):
     return (i // 2)
@@ -139,8 +135,6 @@ def heap_sort(A):
         max_heapify(A, 1, heap_size)
 
 
-
-
 # Quick Sort ------------------------------------------------
 
 def partition(A, p, r):
@@ -163,24 +157,19 @@ def quick_sort(A, p=0, r=None):
         quick_sort(A, p, q - 1)  # Ordena a parte à esquerda do pivô
         quick_sort(A, q + 1, r)  # Ordena a parte à direita do pivô
         
+        
 # Counting Sort ------------------------------------------------
 def counting_sort(A):
-    # Determina o valor máximo do array A
     k = max(A)
-    
-    # Criação do array C de tamanho k+1 (do 0 até k)
+    B = [0] * len(A)
     C = [0] * (k + 1)
-    B = [0] * len(A)  # Array de saída
 
-    # Passo 1: Inicializar o array de contagem C
-    for i in range(k + 1):
+    for i in range(k):
         C[i] = 0
 
-    # Passo 2: Contar as ocorrências de cada elemento em A
-    for j in range(len(A)):
+    for j in range(1, len(A)):
         C[A[j]] += 1
 
-    # Passo 3: Modificar C para conter as posições de cada elemento
     for i in range(1, k + 1):
         C[i] += C[i - 1]
 
@@ -212,7 +201,6 @@ def processar_dados(inc, fim, stp, rpt, output_dir):
         "Heap Sort": heap_sort,
         "Quick Sort": quick_sort,
         "Counting Sort": counting_sort,
-        # Adicione mais algoritmos como insertion_sort, merge_sort etc.
     }
     
     categorias_vetor = {
