@@ -21,12 +21,12 @@ def gerar_vetor_reverso(n):
     return list(range(n, 0, -1)) 
 
 def gerar_vetor_aleatorio(n):
-    #n numeros variando de 0 até n**2, que nem o pdf pediu
+    #n numeros variando de 0 até n
     return [random.randint(0, n) for _ in range(n)] 
 
 
 def gerar_vetor_quase_ordenado(n):
-    # Gerar n números inteiros pseudoaleatórios no intervalo [0, n²]
+    # Gerar n números inteiros pseudoaleatórios no intervalo [0, n]
     vetor = sorted(random.randint(0, n) for _ in range(n))
     
     # Definir 10% dos elementos para serem embaralhados
@@ -157,7 +157,7 @@ def quick_sort(A, p=0, r=None):
         quick_sort(A, p, q - 1)  # Ordena a parte à esquerda do pivô
         quick_sort(A, q + 1, r)  # Ordena a parte à direita do pivô
         
-        
+
 # Counting Sort ------------------------------------------------
 def counting_sort(A):
     k = max(A)
